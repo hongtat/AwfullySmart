@@ -1,10 +1,10 @@
 <a name="ReadMeAnchor"></a>
 <h1>HongTat Tan's SmartThings Repository</h1>
-<hr />
+
 <ul>
 	<li><p><a href="#device-type-handlers">Device Type Handlers</a></p>
 		<ul>
-			<li><a href="#z-wave-light-switch-multichannel">Z-Wave Light Switch Multichannel (NEO Coolcam & MCOHome)</a></li>
+			<li><a href="#z-wave-light-switch-multichannel">Z-Wave Light Switch Multichannel (NEO Coolcam &amp; MCOHome)</a></li>
         </ul>
     </li>
 </ul>
@@ -13,7 +13,7 @@
 
 <h2>Device Type Handlers</h2>
 
-<h3>Z-Wave Light Switch Multichannel</h3>
+<h3>Z-Wave Light Switch Multichannel (NEO Coolcam &amp; MCOHome)</h3>
 <ul>
     <li>This is a Z-Wave Light Switch Multichannel device handler for:</li>
     <ul>
