@@ -12,6 +12,7 @@
  *
  *
  *  Version history:
+ *      1.0.1 (23/09/2017) - Bug fix
  *      1.0 (23/09/2017) - Initial Release
  *
  *  Incorporates code from:
@@ -115,7 +116,7 @@ def parse(String description) {
         } catch (all) { }
     }
     sendEvent(name: "lastCheckin", value: now, displayed: false)
-    def channels = getDataValue("endpoints").toInteger()
+    def channels = getDataValue("endpoints")?.toInteger()
     if (channels > 0) {
         def epevents = "1"
         if (channels > 1) {
@@ -268,6 +269,17 @@ def uninstalled() {
 def updated() {
     log.debug "updated() called"
     initialize()
+    if (childDevices) {
+        if (device.label != state.oldLabel) {
+            childDevices.each {
+                if (it.label == "${state.oldLabel} (CH${channelNumber(it.deviceNetworkId)})") {
+                    def newLabel = "${device.displayName} (CH${channelNumber(it.deviceNetworkId)})"
+                    it.setLabel(newLabel)
+                }
+            }
+            state.oldLabel = device.label
+    	}
+    }
 }
 def refresh() {
     def lastRefreshed = state.lastRefreshed
@@ -312,7 +324,7 @@ def initialize() {
     state.lastInitialized = now()
     log.debug "initialize() called"
 
-    def checkinMethod = (settings.checkin ?: 'Every 1 minute').replace('Every ', 'Every').replace(' minute', 'Minute').replace(' hour', 'Hour')    
+    def checkinMethod = (settings.checkin ?: 'Every 1 minute').replace('Every ', 'Every').replace(' minute', 'Minute').replace(' hour', 'Hour')
     try {
         "run$checkinMethod"(refresh)
     } catch (all) { }
@@ -346,7 +358,7 @@ def initialize() {
         updateDataValue("powerlevel", "0")
     }
     */
-    def channels = getDataValue("endpoints").toInteger()
+    def channels = getDataValue("endpoints")?.toInteger()
     if (channels > 0) {
         def epevents = "1"
         if ("${channels}" > 1) {
@@ -366,7 +378,7 @@ def enableEpEvents(enabledEndpoints) {
 }
 private void createChildDevices() {
     state.oldLabel = device.label
-    def channels = getDataValue("endpoints").toInteger()
+    def channels = getDataValue("endpoints")?.toInteger()
     log.debug "createChildDevices() called - Channels: ${channels}"
     if (channels > 0) {
         if (channels > 1) {
