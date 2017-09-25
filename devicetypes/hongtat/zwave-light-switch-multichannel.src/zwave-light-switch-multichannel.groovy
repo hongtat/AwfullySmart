@@ -12,6 +12,7 @@
  *
  *
  *  Version history:
+ *      1.0.2 (25/09/2017) - Add Health Check & Configure for child device
  *      1.0.1 (23/09/2017) - Bug fix
  *      1.0 (23/09/2017) - Initial Release
  *
@@ -389,6 +390,8 @@ private void createChildDevices() {
                         addChildDevice("Z-Wave Light Switch Multichannel Child Device", "${device.deviceNetworkId}-ep${i}", null, [completedSetup: true, label: "${device.displayName} (CH${i})",
                             isComponent: false, componentName: "ep$i", componentLabel: "Channel $i"
                         ])
+                    } else {
+                        childDevice.sendEvent(name: "checkInterval", value: (60 * 60), displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
                     }
                 }
             } catch (e) {

@@ -25,6 +25,8 @@ metadata {
         capability "Actuator"
         capability "Sensor"
         capability "Refresh"
+        capability "Health Check"
+        capability "Configuration"
 
         attribute "lastCheckin", "String"
     }
@@ -44,6 +46,9 @@ metadata {
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
         }
+        standardTile("configure", "device.default", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label:"", action:"configure", icon:"st.secondary.configure"
+        }
     }
 }
 
@@ -57,4 +62,8 @@ void off() {
 
 void refresh() {
     parent.refresh()
+}
+
+void configure() {
+    parent.configure()
 }
