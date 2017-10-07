@@ -12,6 +12,7 @@
  *
  *
  *  Version history:
+ *      1.0.3 (7/10/2017) - Add 2-way status reporting
  *      1.0.2 (25/09/2017) - Add Health Check & Configure for child device
  *      1.0.1 (23/09/2017) - Bug fix
  *      1.0 (23/09/2017) - Initial Release
@@ -58,12 +59,13 @@ metadata {
     }
 
     //fingerprint inClusters: "0x25", deviceJoinName: "Z-Wave Light Switch"
-    fingerprint mfr:"0258", prod:"0003", model:"108B", deviceJoinName: "NEO Coolcam Z-Wave Light Switch"
-    fingerprint mfr:"0258", prod:"0003", model:"108C", deviceJoinName: "NEO Coolcam Z-Wave Light Switch"
-    fingerprint mfr:"015F", prod:"3102", model:"0202", deviceJoinName: "MCOHome Z-Wave Light Switch"
-    fingerprint mfr:"015F", prod:"3102", model:"1302", deviceJoinName: "MCOHome Z-Wave Light Switch"
-    fingerprint mfr:"015F", prod:"4121", model:"1302", deviceJoinName: "MCOHome Z-Wave Light Switch"
-    fingerprint mfr:"015F", prod:"4102", model:"0202", deviceJoinName: "MCOHome Z-Wave Light Switch"
+    fingerprint mfr:"0258", prod:"0003", model:"108C", deviceJoinName: "NEO Coolcam Light Switch (1-CH)"
+    fingerprint mfr:"0258", prod:"0003", model:"108B", deviceJoinName: "NEO Coolcam Light Switch (2-CH)"
+    fingerprint mfr:"015F", prod:"3102", model:"0201", deviceJoinName: "MCOHome Light Switch S311 (1-CH)"
+    fingerprint mfr:"015F", prod:"3102", model:"0202", deviceJoinName: "MCOHome Light Switch S312 (2-CH)"
+    fingerprint mfr:"015F", prod:"3102", model:"0204", deviceJoinName: "MCOHome Light Switch S314 (4-CH)"
+    fingerprint mfr:"015F", prod:"4102", model:"0201", deviceJoinName: "MCOHome Light Switch S411 (1-CH)"
+    fingerprint mfr:"015F", prod:"4102", model:"0202", deviceJoinName: "MCOHome Light Switch S412 (2-CH)"
     }
     simulator {
         // TODO: define status and reply messages here
@@ -150,6 +152,12 @@ def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cm
 }
 def zwaveEvent(physicalgraph.zwave.commands.powerlevelv1.PowerlevelReport cmd) {
     log.debug "PowerlevelReport() called - ${cmd.inspect()}"
+}
+def zwaveEvent(physicalgraph.zwave.commands.associationv2.AssociationReport cmd) {
+    log.debug "AssociationReport() called - Group #${cmd.groupingIdentifier} contains nodes: ${toHexString(cmd.nodeId)} (hexadecimal format)"
+}
+def zwaveEvent(physicalgraph.zwave.commands.multichannelassociationv2.MultiChannelAssociationReport cmd) {
+    log.debug "MultiChannelAssociationReport() called - Group #${cmd.groupingIdentifier} contains destinations: ${toHexString(cmd.nodeId)} (hexadecimal format)"
 }
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCapabilityReport cmd) {
     def result = []
@@ -382,9 +390,17 @@ private void createChildDevices() {
     def channels = getDataValue("endpoints")?.toInteger()
     log.debug "createChildDevices() called - Channels: ${channels}"
     if (channels > 0) {
+        // Multi-channel Association
+        def cmds = []
+        cmds << new physicalgraph.device.HubAction(zwave.multiChannelAssociationV2.multiChannelAssociationRemove(groupingIdentifier: 1, nodeId: []).format())
+        cmds << new physicalgraph.device.HubAction(zwave.multiChannelAssociationV2.multiChannelAssociationSet(groupingIdentifier: 1, nodeId: [zwaveHubNodeId]).format())
+        cmds << new physicalgraph.device.HubAction(zwave.multiChannelAssociationV2.multiChannelAssociationGet(groupingIdentifier: 1).format())
         if (channels > 1) {
             try {
                 for (i in 2..channels) {
+                    cmds << new physicalgraph.device.HubAction(zwave.multiChannelAssociationV2.multiChannelAssociationRemove(groupingIdentifier: i, nodeId: []).format())
+                    cmds << new physicalgraph.device.HubAction(zwave.multiChannelAssociationV2.multiChannelAssociationSet(groupingIdentifier: i, nodeId: [zwaveHubNodeId]).format())
+                    cmds << new physicalgraph.device.HubAction(zwave.multiChannelAssociationV2.multiChannelAssociationGet(groupingIdentifier: i).format())
                     def childDevice = childDevices.find{ it.deviceNetworkId == "$device.deviceNetworkId-ep$i" }
                     if (!childDevice) {
                         addChildDevice("Z-Wave Light Switch Multichannel Child Device", "${device.deviceNetworkId}-ep${i}", null, [completedSetup: true, label: "${device.displayName} (CH${i})",
@@ -398,6 +414,17 @@ private void createChildDevices() {
                 runIn(2, "sendAlert")
             }
         }
+        sendHubCommand(cmds, 500)
+    } else {
+        // Single-channel Association
+        sendHubCommand([
+            new physicalgraph.device.HubAction(zwave.associationV2.associationRemove(groupingIdentifier: 1, nodeId: []).format()),
+            new physicalgraph.device.HubAction(zwave.associationV2.associationSet(groupingIdentifier: 1, nodeId: [zwaveHubNodeId]).format()),
+            new physicalgraph.device.HubAction(zwave.associationV2.associationGet(groupingIdentifier: 1).format()),
+            new physicalgraph.device.HubAction(zwave.associationV2.associationRemove(groupingIdentifier: 2, nodeId: []).format()),
+            new physicalgraph.device.HubAction(zwave.associationV2.associationSet(groupingIdentifier: 2, nodeId: [zwaveHubNodeId]).format()),
+            new physicalgraph.device.HubAction(zwave.associationV2.associationGet(groupingIdentifier: 2).format())
+        ], 500)
     }
 }
 private channelNumber(String dni) {
@@ -405,6 +432,23 @@ private channelNumber(String dni) {
         dni.split("-ep")[-1] as Integer
     } else {
         "1" as Integer
+    }
+}
+/**
+ *  toHexString()
+ *
+ *  Convert a list of integers to a list of hex strings.
+ **/
+private toHexString(input, size = 2, usePrefix = false) {
+    def pattern = (usePrefix) ? "0x%0${size}X" : "%0${size}X"
+
+    if (input instanceof Collection) {
+        def hex  = []
+        input.each { hex.add(String.format(pattern, it)) }
+        return hex.toString()
+    }
+    else {
+        return String.format(pattern, input)
     }
 }
 private sendAlert() {
