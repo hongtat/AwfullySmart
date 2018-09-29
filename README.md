@@ -37,7 +37,7 @@ This device handler has advanced configuration options.
 	</ul>
     <li>Requires the following device handlers to work:</li>
     <ul>
-        <li><a href="https://github.com/hongtat/AwfullySmart/blob/master/devicetypes/hongtat/neo-coolcam-light-switch.src/">View NEO Coolcam Light Switch - Device Handler Code</a></li>
+        <li><a href="https://github.com/hongtat/AwfullySmart/tree/master/devicetypes/hongtat/neo-coolcam-light-switch.src/">View NEO Coolcam Light Switch - Device Handler Code</a></li>
         <li><a href="https://github.com/hongtat/AwfullySmart/tree/master/devicetypes/hongtat/neo-coolcam-light-switch-child.src">View NEO Coolcam Light Switch - Child Device - Device Handler Code</a></li>
     </ul>
 </ul>
