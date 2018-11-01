@@ -182,13 +182,8 @@ def parse(String description) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, endpoint=null) {
-	if (endpoint == 1 || endpoint == null) {
+	if (zwaveInfo.model.equals("008C") || zwaveInfo.model.equals("108C")) {
 		createEvent(name:"switch", value: cmd.value ? "on" : "off")
-	} else {
-		def childDevice = childDevices.find{ it.deviceNetworkId == "$device.deviceNetworkId-ep$endpoint" }
-		if (childDevice) {
-			childDevice.sendEvent(name: "switch", value: cmd.value ? "on" : "off")
-		}
 	}
 }
 
