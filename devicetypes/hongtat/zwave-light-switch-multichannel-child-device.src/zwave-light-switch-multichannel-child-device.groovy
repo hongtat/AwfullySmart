@@ -5,6 +5,7 @@
  *
  *
  *  Version history:
+ *      1.0.1 (30/04/2020) - Add vid
  *      1.0 (23/09/2017) - Initial Release
  *
  *
@@ -20,7 +21,7 @@
  */
 
 metadata {
-    definition (name: "Z-Wave Light Switch Multichannel Child Device", namespace: "hongtat", author: "HongTat Tan") {
+    definition (name: "Z-Wave Light Switch Multichannel Child Device", namespace: "hongtat", author: "HongTat Tan", vid: "generic-switch") {
         capability "Switch"
         capability "Actuator"
         capability "Sensor"

@@ -12,6 +12,7 @@
  *
  *
  *  Version history:
+ *      1.0.4 (30/04/2020) - Add vid
  *      1.0.3 (7/10/2017) - Add 2-way status reporting
  *      1.0.2 (25/09/2017) - Add Health Check & Configure for child device
  *      1.0.1 (23/09/2017) - Bug fix
@@ -35,7 +36,7 @@
  */
 
 metadata {
-    definition (name: "Z-Wave Light Switch Multichannel", namespace: "hongtat", author: "HongTat Tan") {
+    definition (name: "Z-Wave Light Switch Multichannel", namespace: "hongtat", author: "HongTat Tan", vid: "generic-switch") {
     capability "Actuator"
     capability "Switch"
     capability "Refresh"
