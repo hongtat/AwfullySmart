@@ -5,6 +5,7 @@
 *
 *
 *  Version history:
+*      1.1 (18/09/2020) - Fix for ST breaking change
 *      1.0 (29/09/2018) - Initial Release
 *
 *
@@ -93,9 +94,8 @@ def installed() {
 		}
 		try {
 			String dni = "${device.deviceNetworkId}-ep2"
-			addChildDevice("NEO Coolcam Light Switch Child", dni, null,
-				[completedSetup: true, label: "${componentLabel}",
-				 isComponent: false, componentName: "ch2", componentLabel: "${componentLabel}"])
+			addChildDevice("NEO Coolcam Light Switch Child", dni, device.hub.id,
+					[completedSetup: true, label: "${componentLabel}", isComponent: false])
 			log.debug "Endpoint 2 (NEO Coolcam Light Switch Child) added as $componentLabel"
 		} catch (e) {
 			log.warn "Failed to add endpoint 2 ($desc) as NEO Coolcam Light Switch Child - $e"
