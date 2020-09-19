@@ -12,6 +12,7 @@
  *
  *
  *  Version history:
+ *      1.0.5 (18/09/2020) - Fix ST breaking change
  *      1.0.4 (30/04/2020) - Add vid
  *      1.0.3 (7/10/2017) - Add 2-way status reporting
  *      1.0.2 (25/09/2017) - Add Health Check & Configure for child device
@@ -60,8 +61,8 @@ metadata {
     }
 
     //fingerprint inClusters: "0x25", deviceJoinName: "Z-Wave Light Switch"
-    fingerprint mfr:"0258", prod:"0003", model:"108C", deviceJoinName: "NEO Coolcam Light Switch (1-CH)"
-    fingerprint mfr:"0258", prod:"0003", model:"108B", deviceJoinName: "NEO Coolcam Light Switch (2-CH)"
+    //fingerprint mfr:"0258", prod:"0003", model:"108C", deviceJoinName: "NEO Coolcam Light Switch (1-CH)"
+    //fingerprint mfr:"0258", prod:"0003", model:"108B", deviceJoinName: "NEO Coolcam Light Switch (2-CH)"
     fingerprint mfr:"015F", prod:"3102", model:"0201", deviceJoinName: "MCOHome Light Switch S311 (1-CH)"
     fingerprint mfr:"015F", prod:"3102", model:"0202", deviceJoinName: "MCOHome Light Switch S312 (2-CH)"
     fingerprint mfr:"015F", prod:"3102", model:"0204", deviceJoinName: "MCOHome Light Switch S314 (4-CH)"
@@ -404,9 +405,8 @@ private void createChildDevices() {
                     cmds << new physicalgraph.device.HubAction(zwave.multiChannelAssociationV2.multiChannelAssociationGet(groupingIdentifier: i).format())
                     def childDevice = childDevices.find{ it.deviceNetworkId == "$device.deviceNetworkId-ep$i" }
                     if (!childDevice) {
-                        addChildDevice("Z-Wave Light Switch Multichannel Child Device", "${device.deviceNetworkId}-ep${i}", null, [completedSetup: true, label: "${device.displayName} (CH${i})",
-                            isComponent: false, componentName: "ep$i", componentLabel: "Channel $i"
-                        ])
+                        addChildDevice("Z-Wave Light Switch Multichannel Child Device", "${device.deviceNetworkId}-ep${i}", device.hub.id,
+                                [completedSetup: true, label: "${device.displayName} (CH${i})", isComponent: false])
                     } else {
                         childDevice.sendEvent(name: "checkInterval", value: (60 * 60), displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
                     }
